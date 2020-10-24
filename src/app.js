@@ -36,8 +36,8 @@ app.put("/repositories/:id", (request, response) => {
 
   const repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
-  if (repositoryIndex === -1){
-    return response.status(400).json({ Error: 'Repository does not exist.' });
+  if (repositoryIndex < 0 ){
+    return response.status(400).json({ Error: 'Repository does not exists'});
   }
   
   const repositoryUpdated = {
@@ -45,6 +45,7 @@ app.put("/repositories/:id", (request, response) => {
     title,
     url,
     techs,
+    likes: repositories[repositoryIndex].likes,
   };
 
   repositories[repositoryIndex] = repositoryUpdated;
@@ -53,23 +54,32 @@ app.put("/repositories/:id", (request, response) => {
 
 });
 
-app.delete("/repositories/:id", (request, response) => {
+app.delete("/repositories/:id", (request, response) => { 
   const { id } = request.params;
-
+  
   const repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
-  if (repositoryIndex === -1) {
-    repositories.slice(repositoryIndex, 1);
-  }else {
-    return response.status(400).json({ Error: 'Repository does not exist'});
+  if (repositoryIndex < 0){
+    return response.status(400).json({Error: 'Repository does not exist.'});
   }
-  
+
+  repositories.splice(repositoryIndex, 1);
   return response.status(204).send();
 
 });
 
 app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+  const { id } = request.params;
+
+  const repository = repositories.find((repository) => repository.id === id);
+  if (!repository) {
+    return response.status(400).json({Error: 'Invalid ID'});
+  }
+
+  repository.likes++;
+
+  return response.json(repository);
+
 });
 
 module.exports = app;
